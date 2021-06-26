@@ -1,32 +1,37 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/nanobox-io/golang-scribble"
 )
 
-// Variables used for command line parameters
-var (
-	Token string
-)
+// invite link : https://discord.com/oauth2/authorize?client_id=858208414379409449&scope=bot+applications.commands
 
-func init() {
+// bot list:  https://discord.com/developers/applications
 
-	flag.StringVar(&Token, "t", "", "Bot Token")
-	flag.Parse()
+type Counter struct {
+	Current string
 }
+
+var (
+	Token   string
+	current int
+)
 
 func main() {
 
+	botToken := os.Getenv("BOT_TOKEN")
+
 	// Create a new Discord session using the provided bot token.
-	dg, err := discordgo.New("Bot " + Token)
+	dg, err := discordgo.New("Bot " + botToken)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
@@ -65,12 +70,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
-		s.ChannelMessageSend(m.ChannelID, "Pong!")
-	}
-
-	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
-		s.ChannelMessageSend(m.ChannelID, "Ping!")
+	if m.Content == "exquece" {
+		db, _ := scribble.New("./db", nil)
+		counter := Counter{}
+		db.Read("counter", "counter", &counter)
+		current, _ := strconv.Atoi(counter.Current)
+		current++
+		db.Write("counter", "counter", Counter{Current: strconv.Itoa(current)})
+		s.ChannelMessageSend(m.ChannelID, "exquece: "+strconv.Itoa(current))
 	}
 }
