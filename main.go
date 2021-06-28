@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -69,14 +70,39 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	// If the message is "ping" reply with "Pong!"
-	if m.Content == "exquece" {
-		db, _ := scribble.New("./db", nil)
-		counter := Counter{}
-		db.Read("counter", "counter", &counter)
-		current, _ := strconv.Atoi(counter.Current)
-		current++
-		db.Write("counter", "counter", Counter{Current: strconv.Itoa(current)})
+
+	// Word "exquece" found
+	if findString(m.Content, "exquece") {
+		addOne()
 		s.ChannelMessageSend(m.ChannelID, "exquece: "+strconv.Itoa(current))
+		return
 	}
+
+	// Word "esquece" found
+	if findString(m.Content, "esquece") {
+		setZero()
+		s.ChannelMessageSend(m.ChannelID, "quiii! esqueci!")
+		s.ChannelMessageSend(m.ChannelID, "exquece: "+strconv.Itoa(current))
+		return
+	}
+
+}
+
+func findString(source, target string) bool {
+	return strings.Contains(strings.ToLower(source), target)
+}
+
+func addOne() {
+	db, _ := scribble.New("./db", nil)
+	counter := Counter{}
+	db.Read("counter", "counter", &counter)
+	current, _ := strconv.Atoi(counter.Current)
+	current++
+	db.Write("counter", "counter", Counter{Current: strconv.Itoa(current)})
+}
+
+func setZero() {
+	db, _ := scribble.New("./db", nil)
+	current = 0
+	db.Write("counter", "counter", Counter{Current: strconv.Itoa(current)})
 }
