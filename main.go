@@ -73,14 +73,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Word "exquece" found
 	if findString(m.Content, "exquece") {
-		addOne()
+		current = addOne()
 		s.ChannelMessageSend(m.ChannelID, "exquece: "+strconv.Itoa(current))
 		return
 	}
 
 	// Word "esquece" found
 	if findString(m.Content, "esquece") {
-		setZero()
+		current = setZero()
 		s.ChannelMessageSend(m.ChannelID, "quiii! esqueci!")
 		s.ChannelMessageSend(m.ChannelID, "exquece: "+strconv.Itoa(current))
 		return
@@ -92,17 +92,19 @@ func findString(source, target string) bool {
 	return strings.Contains(strings.ToLower(source), target)
 }
 
-func addOne() {
+func addOne() int {
 	db, _ := scribble.New("./db", nil)
 	counter := Counter{}
 	db.Read("counter", "counter", &counter)
 	current, _ := strconv.Atoi(counter.Current)
 	current++
 	db.Write("counter", "counter", Counter{Current: strconv.Itoa(current)})
+	return current
 }
 
-func setZero() {
+func setZero() int {
 	db, _ := scribble.New("./db", nil)
 	current = 0
 	db.Write("counter", "counter", Counter{Current: strconv.Itoa(current)})
+	return 0
 }
