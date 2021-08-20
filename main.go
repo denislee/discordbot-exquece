@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -72,14 +73,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Word "exquece" found
-	if findString(m.Content, "exquece") {
+	if findString(m.Content, "(e+)(x+)(q+)(u+)(e+)(c+)(e+)") {
 		current = addOne()
 		s.ChannelMessageSend(m.ChannelID, "exquece: "+strconv.Itoa(current))
 		return
 	}
 
 	// Word "esquece" found
-	if findString(m.Content, "esquece") {
+	if findString(m.Content, "(e+)(s+)(q+)(u+)(e+)(c+)(e+)") {
 		current = setZero()
 		s.ChannelMessageSend(m.ChannelID, "quiii! esqueci!")
 		s.ChannelMessageSend(m.ChannelID, "exquece: "+strconv.Itoa(current))
@@ -89,7 +90,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func findString(source, target string) bool {
-	return strings.Contains(strings.ToLower(source), target)
+	re := regexp.MustCompile(target)
+	match := re.FindStringSubmatch(strings.ToLower(source))
+	return len(match) > 0
 }
 
 func addOne() int {
